@@ -27,4 +27,21 @@ class ReadConfTest extends FlatSpec with ShouldMatchers {
     readConf.readsPerSec should be (expected)
   }
 
+  it should "read parallelismLevel as default" in {
+    val conf = new SparkConf(true)
+
+    val readConf = ReadConf.fromSparkConf(conf)
+    readConf.parallelismLevel should be (512)
+  }
+
+  it should "read parallelismLevel from conf" in {
+    val expected = 256
+
+    val conf = new SparkConf(true)
+      .set(ReadConf.ParallelismLevelParam.name, expected.toString)
+
+    val readConf = ReadConf.fromSparkConf(conf)
+    readConf.parallelismLevel should be (expected)
+  }
+
 }

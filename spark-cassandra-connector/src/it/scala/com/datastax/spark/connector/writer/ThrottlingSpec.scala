@@ -4,6 +4,7 @@ import com.datastax.spark.connector._
 import com.datastax.spark.connector.{SomeColumns, SparkCassandraITFlatSpecBase}
 import com.datastax.spark.connector.cql.CassandraConnector
 import com.datastax.spark.connector.embedded.YamlTransformations
+import com.datastax.spark.connector.rdd.ReadConf
 
 import scala.concurrent.Future
 
@@ -42,6 +43,20 @@ class ThrottlingSpec extends SparkCassandraITFlatSpecBase {
       poolingOptions.setMaxQueueSize(1)
       poolingOptions.setMaxConnectionsPerHost(com.datastax.driver.core.HostDistance.LOCAL, 1)
     }
+
+    val rows = (1 to 100000).map(Tuple1(_))
+    val results = sc.parallelize(rows).joinWithCassandraTable(ks, "key_value")
+    results.count should be(10000)
+  }
+
+  it should "limit read parallelism while joining" in {
+    conn.withClusterDo{cluster =>
+      val poolingOptions = cluster.getConfiguration.getPoolingOptions
+      poolingOptions.setMaxQueueSize(1)
+      poolingOptions.setMaxConnectionsPerHost(com.datastax.driver.core.HostDistance.LOCAL, 1)
+    }
+
+    useSparkConf(sc.getConf.clone().set(ReadConf.ParallelismLevelParam.name, "5"))
 
     val rows = (1 to 100000).map(Tuple1(_))
     val results = sc.parallelize(rows).joinWithCassandraTable(ks, "key_value")

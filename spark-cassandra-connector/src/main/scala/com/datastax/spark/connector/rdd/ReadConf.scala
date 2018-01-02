@@ -121,6 +121,9 @@ object ReadConf extends Logging {
         conf.get(ConsistencyLevelParam.name, ConsistencyLevelParam.default.name)),
 
       taskMetricsEnabled = conf.getBoolean(TaskMetricParam.name, TaskMetricParam.default),
+
+      parallelismLevel = conf.getInt(ParallelismLevelParam.name, ParallelismLevelParam.default),
+
       readsPerSec = conf.getInt(ReadsPerSecParam.name,
         throughtputJoinQueryPerSec.getOrElse(ReadsPerSecParam.default))
     )
